@@ -13,6 +13,7 @@ namespace ProceduralLevelDesign {
 
     #region Struc
 
+    [System.Serializable]
     public struct Maze {
         public int minX;
         public int maxX;
@@ -201,7 +202,16 @@ namespace ProceduralLevelDesign {
             maze.isSilceableY = maze.heigth > minMazeSizeX * 2 ? true : false;
             if (!maze.isSilceableX || !maze.isSilceableY)
                 return;
-            maze.isSilceableX = false;
+
+            if (maze.isSilceableX && maze.isSilceableY) {
+                int iAxisToCut = Random.Range(0, 2);
+                if (iAxisToCut == 0) {
+                    maze.isSilceableX = false;
+                }
+                else {
+                    maze.isSilceableY = false;
+                }
+            }
 
             if (maze.isSilceableX && !maze.isSilceableY) {
                 int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX - minMazeSizeY - 1);
