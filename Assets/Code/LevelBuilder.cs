@@ -53,7 +53,7 @@ namespace ProceduralLevelDesign {
         public void CreateMaze() {
             CreateMatrix();
             GameObject tempPrefab;
-            for (int i = 0; i < _XMatrixAxis - 1; i++) {
+            for (int i = 0; i < _XMatrixAxis; i++) {
                 for (int j = 0; j < _YMatrixAxis; j++) {
                     tempPrefab = Instantiate(_modulePrefab);
                     tempPrefab.transform.parent = transform;
@@ -184,7 +184,7 @@ namespace ProceduralLevelDesign {
             module.SetSouthWestNeigh(x > 0 && z > 0 && _matrix[x - 1, z - 1] && _matrix[x - 1, z - 1].gameObject.activeSelf);
             //module.SetSouthWestNeigh(x > 0 && z > 0 && _matrix[x - 1, z - 1]);
             if (module.southWestNeighbor)
-                neighbors.Add(_matrix[x + 1, z - 1]);
+                neighbors.Add(_matrix[x - 1, z - 1]);
 
             module.SetSouthEastNeigh(x < _XMatrixAxis - 1 && z > 0 && _matrix[x + 1, z - 1] && _matrix[x + 1, z - 1].gameObject.activeSelf);
             //module.SetSouthEastNeigh(x < _XMatrixAxis - 1 && z > 0 && _matrix[x + 1, z - 1]);
