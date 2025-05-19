@@ -13,19 +13,21 @@ namespace ProceduralLevelDesign {
                 _levelBuilder = (LevelBuilder)target;
             }
             DrawDefaultInspector();
-            if (GUILayout.Button("SpawnThemHoes")) {
+            if (GUILayout.Button("SpawnThemModules")) {
                 _levelBuilder.CreateLevel();
             }
-            if (GUILayout.Button("CutThemHoes")) {
+            if (GUILayout.Button("CutThemModules")) {
                 Maze maze = new Maze() {
                     minX = 0,
                     minY = 0,
                     maxX = _levelBuilder._XMatrixAxis - 1,
                     maxY = _levelBuilder._YMatrixAxis - 1,
+                    lastRandomBridge = -1,
+                    lastCutType = Maze.LastCutType.none
                 };
                 _levelBuilder.BinarySpacePartition(maze);
             }
-            if (GUILayout.Button("ClearThemHoes")) {
+            if (GUILayout.Button("ClearThemModules")) {
                 _levelBuilder.ClearLevel();
             }
         }

@@ -11,9 +11,16 @@ namespace ProceduralLevelDesign {
     }
     #endregion
     #region Struc
-
     [System.Serializable]
     public struct Maze {
+        public enum LastCutType {
+            none,
+            horizontal,
+            vertical
+        }
+
+        [SerializeField] public LastCutType lastCutType;
+        [SerializeField] public int lastRandomBridge;
         [SerializeField] public int minX;
         [SerializeField] public int maxX;
         [SerializeField] public int minY;
@@ -24,8 +31,9 @@ namespace ProceduralLevelDesign {
         [SerializeField] public bool isSilceableX;
         [SerializeField] public bool isSilceableY;
     }
-
     #endregion
+
+    //si el corte es en diferente eje y el randomCut y el randomBridge son lo mismo entonces tenemos que escojer un nuevo randomCut
 
     public class LevelBuilder : MonoBehaviour, ILevelEditor {
         #region Parameters
@@ -173,7 +181,14 @@ namespace ProceduralLevelDesign {
 
             if (maze.isSilceableX && !maze.isSilceableY) {
                 int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX - minMazeSizeX - 1);
-
+                //if (((maze.maxX - minMazeSizeX - 1) - (maze.minX + minMazeSizeX + 1) == 1) && maze.lastCutType == Maze.LastCutType.horizontal) {
+                //    return;
+                //}
+                //do {
+                //    RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX - minMazeSizeX - 1);
+                //    Debug.Log($"{maze.lastRandomBridge}, {RandomCut}");
+                //}
+                //while (maze.lastCutType == Maze.LastCutType.horizontal && maze.lastRandomBridge == RandomCut);
                 for (int i = maze.minY; i <= maze.maxY; i++) {
                     if (_matrix[RandomCut, i].transform.position.x == RandomCut 
                         && _matrix[RandomCut, i].transform.position.z >= maze.minY 
@@ -196,13 +211,17 @@ namespace ProceduralLevelDesign {
                     minX = maze.minX,
                     maxX = RandomCut - 1,
                     minY = maze.minY,
-                    maxY = maze.maxY
+                    maxY = maze.maxY,
+                    lastRandomBridge = RandomBridge,
+                    lastCutType = Maze.LastCutType.vertical
                 };
                 Maze maze2 = new Maze() {
                     minX = RandomCut + 1,
                     maxX = maze.maxX,
                     minY = maze.minY,
-                    maxY = maze.maxY
+                    maxY = maze.maxY,
+                    lastRandomBridge = RandomBridge,
+                    lastCutType = Maze.LastCutType.vertical
                 };
                 BinarySpacePartition(maze1);
                 BinarySpacePartition(maze2);
@@ -210,6 +229,14 @@ namespace ProceduralLevelDesign {
 
             if (!maze.isSilceableX && maze.isSilceableY) {
                 int RandomCut = Random.Range(maze.minY + minMazeSizeY + 1, maze.maxY - minMazeSizeY - 1);
+                //if (((maze.maxY - minMazeSizeY - 1) - (maze.minY + minMazeSizeY + 1) == 1) && maze.lastCutType == Maze.LastCutType.vertical) {
+                //    return;
+                //}
+                //do {
+                //    RandomCut = Random.Range(maze.minY + minMazeSizeY + 1, maze.maxY - minMazeSizeY - 1);
+                //    Debug.Log($"{maze.lastRandomBridge}, {RandomCut}");
+                //}
+                //while (maze.lastCutType == Maze.LastCutType.vertical && maze.lastRandomBridge == RandomCut);
                 for (int i = maze.minX; i <= maze.maxX; i++) {
                     if (_matrix[i, RandomCut].transform.position.z == RandomCut 
                         && _matrix[i, RandomCut].transform.position.x >= maze.minX 
@@ -232,13 +259,17 @@ namespace ProceduralLevelDesign {
                     minX = maze.minX,
                     maxX = maze.maxX,
                     minY = maze.minY,
-                    maxY = RandomCut - 1
+                    maxY = RandomCut - 1,
+                    lastRandomBridge = RandomBridge,
+                    lastCutType = Maze.LastCutType.horizontal
                 };
                 Maze maze2 = new Maze() {
                     minX = maze.minX,
                     maxX = maze.maxX,
                     minY = RandomCut + 1,
-                    maxY = maze.maxY
+                    maxY = maze.maxY,
+                    lastRandomBridge = RandomBridge,
+                    lastCutType = Maze.LastCutType.horizontal
                 };
                 BinarySpacePartition(maze1);
                 BinarySpacePartition(maze2);
