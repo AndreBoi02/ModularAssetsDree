@@ -5462,8 +5462,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cam: {fileID: 330585545}
   _modulePrefab: {fileID: 6166375071414217530, guid: 3c0226f2f8d3eeb4597c8e8bb6ba236b, type: 3}
-  _XMatrixAxis: 25
-  _YMatrixAxis: 30
+  _XMatrixAxis: 20
+  _YMatrixAxis: 20
   _allModulesInScene: []
   _corners:
   - {fileID: 805936199}

@@ -34,8 +34,8 @@ namespace ProceduralLevelDesign {
         [SerializeField] GameObject _modulePrefab;
         GameObject _moduleInstance;
 
-        [SerializeField] int _XMatrixAxis;
-        [SerializeField] int _YMatrixAxis;
+        [SerializeField] public int _XMatrixAxis;
+        [SerializeField] public int _YMatrixAxis;
         Module[,] _matrix;
         #endregion
 
@@ -51,8 +51,21 @@ namespace ProceduralLevelDesign {
         Vector3 _modulePosition;
         #endregion
 
+        public void CreateLevel() {
+            CreateMatrix();
+            for (int i = 0; i < _XMatrixAxis; i++) {
+                for (int j = 0; j < _YMatrixAxis; j++) {
+                    GameObject tempObj = Instantiate(_modulePrefab);
+                    tempObj.transform.position = new Vector3(i, _modulePrefab.transform.position.y, j);
+                    _allModulesInScene.Add(tempObj.GetComponent<Module>());
+                    _matrix[i, j] = tempObj.GetComponent<Module>();
+                    SetNeighbors();
+                }
+            }
+        }
+
         public void ClearLevel() {
-            foreach (Module module in transform.GetComponentsInChildren<Module>()) {
+            foreach (Module module in _allModulesInScene) {
                 DestroyImmediate(module.gameObject);
             }
             _allModulesInScene.Clear();
@@ -162,7 +175,7 @@ namespace ProceduralLevelDesign {
 
             module.SetSouthWestNeigh(x > 0 && z > 0 && _matrix[x - 1, z - 1]);
             if (module.southWestNeighbor)
-                neighbors.Add(_matrix[x + 1, z - 1]);
+                neighbors.Add(_matrix[x - 1, z - 1]);
 
             module.SetSouthEastNeigh(x < _XMatrixAxis - 1 && z > 0 && _matrix[x + 1, z - 1]);
             if (module.southEastNeighbor)
@@ -182,11 +195,20 @@ namespace ProceduralLevelDesign {
         [SerializeField] int minMazeSizeX;
         [SerializeField] int minMazeSizeY;
 
-        void BinarySpacePartition(Maze maze) {
+        public void BinarySpacePartition(Maze maze) {
             maze.isSilceableX = maze.width > minMazeSizeX * 2 ? true : false;
             maze.isSilceableY = maze.heigth > minMazeSizeX * 2 ? true : false;
             if (!maze.isSilceableX || !maze.isSilceableY)
                 return;
+            maze.isSilceableY = false;
+            if (maze.isSilceableX && !maze.isSilceableY) {
+                int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX + minMazeSizeY + 1);
+
+                for (int i = maze.minY; i < maze.maxY; i++) {
+                    _allModulesInScene.Remove(_matrix[RandomCut, i].GetComponent<Module>());
+                    DestroyImmediate(_matrix[RandomCut, i].gameObject);
+                }
+            }
         }
     }
 }
