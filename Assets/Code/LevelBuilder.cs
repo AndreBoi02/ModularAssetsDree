@@ -10,7 +10,6 @@ namespace ProceduralLevelDesign {
         public void CreateModule(Vector2 val, int i);
     }
     #endregion
-
     #region Struc
 
     [System.Serializable]
@@ -32,24 +31,21 @@ namespace ProceduralLevelDesign {
         #region Parameters
         [SerializeField] Camera _cam;
         [SerializeField] GameObject _modulePrefab;
-        
-
-        [SerializeField] public int _XMatrixAxis;
-        [SerializeField] public int _YMatrixAxis;
+        [SerializeField]List<GameObject> _corners;
+        #endregion
+        #region InternalData
+        List<Module> _allModulesInScene = new List<Module>();
         Module[,] _matrix;
         #endregion
-
-        #region InternalData
-        List<Module> _allModulesInScene;
-        #endregion
-
-        [SerializeField]List<GameObject> _corners;
-
         #region RuntimeVar
         Ray _rayFromSceneCamera;
         RaycastHit _rayCastHit;
+        [SerializeField] public int _XMatrixAxis;
+        [SerializeField] public int _YMatrixAxis;
+        [SerializeField] int minMazeSizeX;
+        [SerializeField] int minMazeSizeY;
         #endregion
-
+        #region PublicMethods
         public void CreateLevel() {
             CreateMatrix();
             for (int i = 0; i < _XMatrixAxis; i++) {
@@ -63,7 +59,6 @@ namespace ProceduralLevelDesign {
                 }
             }
         }
-
         public void ClearLevel() {
             foreach (Module module in _allModulesInScene) {
                 DestroyImmediate(module.gameObject);
@@ -71,17 +66,6 @@ namespace ProceduralLevelDesign {
             _allModulesInScene.Clear();
             ClearMatrix();
         }
-
-        public void DeleteModule(Vector2 val, int i) {
-            _rayFromSceneCamera = i == 0 ? HandleUtility.GUIPointToWorldRay(val) : _cam.ScreenPointToRay(val);
-            if (RayHitLayout())
-                return;
-            GameObject tempModule = _rayCastHit.collider.transform.parent.gameObject;
-            _allModulesInScene.Remove(tempModule.GetComponent<Module>());
-            DestroyImmediate(tempModule);
-            SetNeighbors();
-        }
-
         public void CreateModule(Vector2 val, int i) {
             CreateMatrix();
             _rayFromSceneCamera = i == 0? HandleUtility.GUIPointToWorldRay(val) : _cam.ScreenPointToRay(val);
@@ -98,7 +82,15 @@ namespace ProceduralLevelDesign {
                 SetNeighbors();
             }
         }
-
+        public void DeleteModule(Vector2 val, int i) {
+            _rayFromSceneCamera = i == 0 ? HandleUtility.GUIPointToWorldRay(val) : _cam.ScreenPointToRay(val);
+            if (RayHitLayout())
+                return;
+            GameObject tempModule = _rayCastHit.collider.transform.parent.gameObject;
+            _allModulesInScene.Remove(tempModule.GetComponent<Module>());
+            DestroyImmediate(tempModule);
+            SetNeighbors();
+        }
         public void CreateMatrix() {
             if (_matrix != null)
                 return;
@@ -110,19 +102,12 @@ namespace ProceduralLevelDesign {
             _corners[2].transform.position = new Vector3(0, 0, _YMatrixAxis);
             _corners[3].transform.position = new Vector3(_XMatrixAxis, 0, _YMatrixAxis);
         }
-
         public void ClearMatrix() {
             _matrix =null;
             foreach (GameObject gameObject in _corners) {
                 gameObject.transform.position = new Vector3(0, 0, 0);
             }
         }
-
-        bool RayHitLayout() {
-            Debug.DrawRay(_rayFromSceneCamera.origin, _rayFromSceneCamera.direction * 10000f, Color.green, 5f);
-            return Physics.Raycast(_rayFromSceneCamera, out _rayCastHit, 10000f) && _rayCastHit.collider.gameObject.layer == LayerMask.NameToLayer("Layout");
-        }
-
         public void SetNeighbors() {
             foreach (Module module in _allModulesInScene) {
                 module.GetNeighbors(GiveNeighbors(module));
@@ -130,23 +115,6 @@ namespace ProceduralLevelDesign {
                 module.TurnOffPillars();
             }
         }
-
-        bool CheckIfValidCoordinate(Vector3 val) {
-            bool validX = false; 
-            bool validY = false;
-            for (int i = 0; i < _XMatrixAxis - 1; i++) {
-                for (int j = 0; j < _YMatrixAxis - 1; j++) {
-                    if ((int)val.x == i) {
-                        validX = true;
-                    }
-                    if ((int)val.z == j) {
-                        validY = true;
-                    }
-                }
-            }
-            return validX && validY;
-        }
-
         public List<Module> GiveNeighbors(Module module) {
             List<Module> neighbors = new List<Module>();
 
@@ -187,14 +155,10 @@ namespace ProceduralLevelDesign {
 
             return neighbors;
         }
-
-        [SerializeField] int minMazeSizeX;
-        [SerializeField] int minMazeSizeY;
-
         public void BinarySpacePartition(Maze maze) {
             maze.isSilceableX = maze.width > minMazeSizeX * 2 ? true : false;
             maze.isSilceableY = maze.heigth > minMazeSizeY * 2 ? true : false;
-            if (!maze.isSilceableX || !maze.isSilceableY)
+            if (!maze.isSilceableX && !maze.isSilceableY)
                 return;
 
             if (maze.isSilceableX && maze.isSilceableY) {
@@ -280,5 +244,27 @@ namespace ProceduralLevelDesign {
                 BinarySpacePartition(maze2);
             }
         }
+        #endregion
+        #region LocalMethods
+        bool RayHitLayout() {
+            Debug.DrawRay(_rayFromSceneCamera.origin, _rayFromSceneCamera.direction * 10000f, Color.green, 5f);
+            return Physics.Raycast(_rayFromSceneCamera, out _rayCastHit, 10000f) && _rayCastHit.collider.gameObject.layer == LayerMask.NameToLayer("Layout");
+        }
+        bool CheckIfValidCoordinate(Vector3 val) {
+            bool validX = false; 
+            bool validY = false;
+            for (int i = 0; i < _XMatrixAxis - 1; i++) {
+                for (int j = 0; j < _YMatrixAxis - 1; j++) {
+                    if ((int)val.x == i) {
+                        validX = true;
+                    }
+                    if ((int)val.z == j) {
+                        validY = true;
+                    }
+                }
+            }
+            return validX && validY;
+        }
+        #endregion
     }
 }
