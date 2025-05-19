@@ -21,14 +21,13 @@ namespace ProceduralLevelDesign {
                 levelBuilder?.ClearLevel();
             }
             if ( e.type == EventType.KeyUp && e.keyCode == KeyCode.Backspace) {
-                levelBuilder?.DeleteLevel(e.mousePosition , 0);
+                levelBuilder?.DeleteModule(e.mousePosition , 0);
             }
             if( e.type == EventType.MouseUp && e.button == 0 ) {
-                levelBuilder?.CreateLevel(e.mousePosition, 0);
+                levelBuilder?.CreateModule(e.mousePosition, 0);
             }
         }
 
         #endregion
     }
 }
-

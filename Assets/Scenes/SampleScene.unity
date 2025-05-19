@@ -5470,6 +5470,8 @@ MonoBehaviour:
   - {fileID: 1058466619}
   - {fileID: 1814824737}
   - {fileID: 1793843931}
+  minMazeSizeX: 0
+  minMazeSizeY: 0
 --- !u!114 &341895538
 MonoBehaviour:
   m_ObjectHideFlags: 0
