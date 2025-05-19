@@ -15,16 +15,15 @@ namespace ProceduralLevelDesign {
 
     [System.Serializable]
     public struct Maze {
-        public int minX;
-        public int maxX;
-        public int minY;
-        public int maxY;
-
-        public int width => maxX - minX;
-        public int heigth => maxY - minY;
-
-        public bool isSilceableX;
-        public bool isSilceableY;
+        [SerializeField] public int minX;
+        [SerializeField] public int maxX;
+        [SerializeField] public int minY;
+        [SerializeField] public int maxY;
+        [SerializeField] public int width => maxX - minX;
+        [SerializeField] public int heigth => maxY - minY;
+                         
+        [SerializeField] public bool isSilceableX;
+        [SerializeField] public bool isSilceableY;
     }
 
     #endregion
@@ -33,7 +32,7 @@ namespace ProceduralLevelDesign {
         #region Parameters
         [SerializeField] Camera _cam;
         [SerializeField] GameObject _modulePrefab;
-        GameObject _moduleInstance;
+        
 
         [SerializeField] public int _XMatrixAxis;
         [SerializeField] public int _YMatrixAxis;
@@ -41,7 +40,7 @@ namespace ProceduralLevelDesign {
         #endregion
 
         #region InternalData
-        [SerializeField] List<Module> _allModulesInScene;
+        List<Module> _allModulesInScene;
         #endregion
 
         [SerializeField]List<GameObject> _corners;
@@ -49,7 +48,6 @@ namespace ProceduralLevelDesign {
         #region RuntimeVar
         Ray _rayFromSceneCamera;
         RaycastHit _rayCastHit;
-        Vector3 _modulePosition;
         #endregion
 
         public void CreateLevel() {
@@ -78,9 +76,9 @@ namespace ProceduralLevelDesign {
             _rayFromSceneCamera = i == 0 ? HandleUtility.GUIPointToWorldRay(val) : _cam.ScreenPointToRay(val);
             if (RayHitLayout())
                 return;
-            _moduleInstance = _rayCastHit.collider.transform.parent.gameObject;
-            _allModulesInScene.Remove(_moduleInstance.GetComponent<Module>());
-            DestroyImmediate(_moduleInstance);
+            GameObject tempModule = _rayCastHit.collider.transform.parent.gameObject;
+            _allModulesInScene.Remove(tempModule.GetComponent<Module>());
+            DestroyImmediate(tempModule);
             SetNeighbors();
         }
 
@@ -91,16 +89,12 @@ namespace ProceduralLevelDesign {
                 return;
 
             if (CheckIfValidCoordinate(_rayCastHit.point) && _matrix != null) {
-                _moduleInstance = Instantiate(_modulePrefab);
-                _moduleInstance.transform.parent = transform;
-                _modulePosition = _rayCastHit.point;
-                _modulePosition.x = (int)_modulePosition.x;
-                _modulePosition.y = (int)_modulePosition.y;
-                _modulePosition.z = (int)_modulePosition.z;
-                _moduleInstance.transform.position = _modulePosition;
+                GameObject tempModule = Instantiate(_modulePrefab);
+                tempModule.transform.parent = transform;
+                tempModule.transform.position = new Vector3 ((int)_rayCastHit.point.x, (int)_rayCastHit.point.y, (int)_rayCastHit.point.z);
 
-                _allModulesInScene.Add(_moduleInstance.GetComponent<Module>());
-                _matrix[(int)_modulePosition.x, (int)_modulePosition.z] = _moduleInstance.GetComponent<Module>();
+                _allModulesInScene.Add(tempModule.GetComponent<Module>());
+                _matrix[(int)tempModule.transform.position.x, (int)tempModule.transform.position.z] = tempModule.GetComponent<Module>();
                 SetNeighbors();
             }
         }
@@ -199,7 +193,7 @@ namespace ProceduralLevelDesign {
 
         public void BinarySpacePartition(Maze maze) {
             maze.isSilceableX = maze.width > minMazeSizeX * 2 ? true : false;
-            maze.isSilceableY = maze.heigth > minMazeSizeX * 2 ? true : false;
+            maze.isSilceableY = maze.heigth > minMazeSizeY * 2 ? true : false;
             if (!maze.isSilceableX || !maze.isSilceableY)
                 return;
 
@@ -214,13 +208,26 @@ namespace ProceduralLevelDesign {
             }
 
             if (maze.isSilceableX && !maze.isSilceableY) {
-                int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX - minMazeSizeY - 1);
+                int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX - minMazeSizeX - 1);
 
                 for (int i = maze.minY; i <= maze.maxY; i++) {
-                    _allModulesInScene.Remove(_matrix[RandomCut, i].GetComponent<Module>());
-                    DestroyImmediate(_matrix[RandomCut, i].gameObject);
-                    SetNeighbors();
+                    if (_matrix[RandomCut, i].transform.position.x == RandomCut 
+                        && _matrix[RandomCut, i].transform.position.z >= maze.minY 
+                        && _matrix[RandomCut, i].transform.position.z <= maze.maxY ) {
+                        _allModulesInScene.Remove(_matrix[RandomCut, i]);
+                        DestroyImmediate(_matrix[RandomCut, i].gameObject);
+                        SetNeighbors();
+                    }
                 }
+
+                int RandomBridge = Random.Range(maze.minY, maze.maxY);
+                GameObject tempObj = Instantiate(_modulePrefab);
+                tempObj.transform.parent = transform;
+                tempObj.transform.position = new Vector3(RandomCut, _modulePrefab.transform.position.y, RandomBridge);
+                _allModulesInScene.Add(tempObj.GetComponent<Module>());
+                _matrix[RandomCut, RandomBridge] = tempObj.GetComponent<Module>();
+                SetNeighbors();
+
                 Maze maze1 = new Maze() {
                     minX = maze.minX,
                     maxX = RandomCut - 1,
@@ -240,10 +247,23 @@ namespace ProceduralLevelDesign {
             if (!maze.isSilceableX && maze.isSilceableY) {
                 int RandomCut = Random.Range(maze.minY + minMazeSizeY + 1, maze.maxY - minMazeSizeY - 1);
                 for (int i = maze.minX; i <= maze.maxX; i++) {
-                    _allModulesInScene.Remove(_matrix[i, RandomCut]);
-                    DestroyImmediate(_matrix[i, RandomCut].gameObject);
-                    SetNeighbors();
+                    if (_matrix[i, RandomCut].transform.position.z == RandomCut 
+                        && _matrix[i, RandomCut].transform.position.x >= maze.minX 
+                        && _matrix[i, RandomCut].transform.position.x <= maze.maxX) {
+                        _allModulesInScene.Remove(_matrix[i, RandomCut]);
+                        DestroyImmediate(_matrix[i, RandomCut].gameObject);
+                        SetNeighbors();
+                    }
                 }
+
+                int RandomBridge = Random.Range(maze.minY, maze.maxY);
+                GameObject tempObj = Instantiate(_modulePrefab);
+                tempObj.transform.parent = transform;
+                tempObj.transform.position = new Vector3(RandomBridge, _modulePrefab.transform.position.y, RandomCut);
+                _allModulesInScene.Add(tempObj.GetComponent<Module>());
+                _matrix[RandomBridge, RandomCut] = tempObj.GetComponent<Module>();
+                SetNeighbors();
+
                 Maze maze1 = new Maze() {
                     minX = maze.minX,
                     maxX = maze.maxX,
