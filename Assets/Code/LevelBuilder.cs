@@ -201,7 +201,7 @@ namespace ProceduralLevelDesign {
             maze.isSilceableY = maze.heigth > minMazeSizeX * 2 ? true : false;
             if (!maze.isSilceableX || !maze.isSilceableY)
                 return;
-            maze.isSilceableY = false;
+            maze.isSilceableX = false;
 
             if (maze.isSilceableX && !maze.isSilceableY) {
                 int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX - minMazeSizeY - 1);
@@ -221,6 +221,29 @@ namespace ProceduralLevelDesign {
                     minX = RandomCut + 1,
                     maxX = maze.maxX,
                     minY = maze.minY,
+                    maxY = maze.maxY
+                };
+                BinarySpacePartition(maze1);
+                BinarySpacePartition(maze2);
+            }
+
+            if (!maze.isSilceableX && maze.isSilceableY) {
+                int RandomCut = Random.Range(maze.minY + minMazeSizeY + 1, maze.maxY - minMazeSizeY - 1);
+                for (int i = maze.minX; i <= maze.maxX; i++) {
+                    _allModulesInScene.Remove(_matrix[i, RandomCut]);
+                    DestroyImmediate(_matrix[i, RandomCut].gameObject);
+                    SetNeighbors();
+                }
+                Maze maze1 = new Maze() {
+                    minX = maze.minX,
+                    maxX = maze.maxX,
+                    minY = maze.minY,
+                    maxY = RandomCut - 1
+                };
+                Maze maze2 = new Maze() {
+                    minX = maze.minX,
+                    maxX = maze.maxX,
+                    minY = RandomCut + 1,
                     maxY = maze.maxY
                 };
                 BinarySpacePartition(maze1);
