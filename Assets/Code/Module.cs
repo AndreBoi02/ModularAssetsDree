@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 namespace ProceduralLevelDesign {
     public class Module : MonoBehaviour {
+        #region References
+        [SerializeField] List<GameObject> walls;
+        [SerializeField] List<GameObject> pillars;
+        #endregion
+        #region InternalData
+        List<Module> neighbors = new List<Module>();
+        #endregion
         #region RuntimeVars
         public bool northNeighbor { get; private set; }
         public bool southNeighbor { get; private set; }
@@ -13,11 +20,6 @@ namespace ProceduralLevelDesign {
         public bool northWestNeighbor { get; private set; }
         public bool southEastNeighbor { get; private set; }
         public bool southWestNeighbor { get; private set; }
-        #endregion
-        #region References
-        [SerializeField] List<GameObject> walls;
-        [SerializeField] List<GameObject> pillars;
-        [SerializeField] List<Module> neighbors;
         #endregion
         #region PublicMethods
         public void TurnOffWalls() {

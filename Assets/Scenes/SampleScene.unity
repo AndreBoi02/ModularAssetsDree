@@ -5462,16 +5462,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cam: {fileID: 330585545}
   _modulePrefab: {fileID: 6166375071414217530, guid: 3c0226f2f8d3eeb4597c8e8bb6ba236b, type: 3}
-  _XMatrixAxis: 25
-  _YMatrixAxis: 30
-  _allModulesInScene: []
   _corners:
   - {fileID: 805936199}
   - {fileID: 1058466619}
   - {fileID: 1814824737}
   - {fileID: 1793843931}
-  minMazeSizeX: 0
-  minMazeSizeY: 0
+  _YMatrixAxis: 20
+  _XMatrixAxis: 20
+  minMazeSizeX: 1
+  minMazeSizeY: 1
 --- !u!114 &341895538
 MonoBehaviour:
   m_ObjectHideFlags: 0
