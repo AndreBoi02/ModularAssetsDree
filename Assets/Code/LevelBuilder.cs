@@ -56,6 +56,7 @@ namespace ProceduralLevelDesign {
             for (int i = 0; i < _XMatrixAxis; i++) {
                 for (int j = 0; j < _YMatrixAxis; j++) {
                     GameObject tempObj = Instantiate(_modulePrefab);
+                    tempObj.transform.parent = transform;
                     tempObj.transform.position = new Vector3(i, _modulePrefab.transform.position.y, j);
                     _allModulesInScene.Add(tempObj.GetComponent<Module>());
                     _matrix[i, j] = tempObj.GetComponent<Module>();
@@ -201,13 +202,29 @@ namespace ProceduralLevelDesign {
             if (!maze.isSilceableX || !maze.isSilceableY)
                 return;
             maze.isSilceableY = false;
-            if (maze.isSilceableX && !maze.isSilceableY) {
-                int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX + minMazeSizeY + 1);
 
-                for (int i = maze.minY; i < maze.maxY; i++) {
+            if (maze.isSilceableX && !maze.isSilceableY) {
+                int RandomCut = Random.Range(maze.minX + minMazeSizeX + 1, maze.maxX - minMazeSizeY - 1);
+
+                for (int i = maze.minY; i <= maze.maxY; i++) {
                     _allModulesInScene.Remove(_matrix[RandomCut, i].GetComponent<Module>());
                     DestroyImmediate(_matrix[RandomCut, i].gameObject);
+                    SetNeighbors();
                 }
+                Maze maze1 = new Maze() {
+                    minX = maze.minX,
+                    maxX = RandomCut - 1,
+                    minY = maze.minY,
+                    maxY = maze.maxY
+                };
+                Maze maze2 = new Maze() {
+                    minX = RandomCut + 1,
+                    maxX = maze.maxX,
+                    minY = maze.minY,
+                    maxY = maze.maxY
+                };
+                BinarySpacePartition(maze1);
+                BinarySpacePartition(maze2);
             }
         }
     }
